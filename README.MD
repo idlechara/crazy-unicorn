@@ -3,7 +3,8 @@ An exploit for UtalcaAPP which allows users to attend any class as long as they 
 
 ## Motivation
 * Contribute to QA process
-* Satisfy my curiosity
+* Satisfy my curiosity and to feed my ego.
+* I don't want to use an application that it is insecure by default. I don't like the idea of sharing my passwords over the network without any encryption on it. I think that it's both insecure and offensive because I expect developers to build secure and well tested applications, not toys. I wanted to make sure that the final product can compete with my standards.
 
 ## How does it works
 Its decompiles the original APK and then injects a payload into it. The payload is used to track any communication between the cellphone to the servers and the beacons. The info tracked is used to grab auth credentials which allows to automate the process of getting an attendance mark on the platform.
@@ -29,7 +30,7 @@ I started by checking android log. This gave me some pointers about where to sta
 ![initial audit stage](images/initial_audit.png)
 As it can be seen, the application was built using [ReactNative](https://facebook.github.io/react-native/) which is a JavaScript framework to build mobile applications. As every JS framework it suffers from the crux of low-skilled developers in terms of security and packaging.
 
-### Dissasembly stage
+### Dissasembly and study stage
 After decompiling the apk I found some interesting things. 
 * The beacon module is built as a native Java module, imported onto React.
 * Most of the [smali](https://github.com/JesusFreke/smali) code looks like copypasted from another source or maybe two developers worked on this app.
@@ -51,7 +52,7 @@ After decompiling the apk I found some interesting things.
             password: String 
         }
         ```
-        Returns: 
+        Response: 
         ```javascript
         Number //The student id number
         ```
@@ -66,7 +67,7 @@ After decompiling the apk I found some interesting things.
             ID: String // The student id
         }
         ```
-        Returns: 
+        Response: 
         ```javascript
         //TODO
         ```
@@ -84,7 +85,33 @@ After decompiling the apk I found some interesting things.
             }
         }
         ```
-        Returns: 
+        Response: 
         ```javascript
         //TODO
         ```
+    * All of those enpoints can be exploited in order to get the access token and the attendance mark.
+
+### Exploitation stage
+Exploitation was made by modifying ReactNative bundle which is plain available on the disassemblied apk and [using it as a payload to the native application,](./payload.js) that way we can have some degree of control over the beacon data, credentials and other stuff.
+
+After that a shell script was built in order to automatize the process and a python script was made in order to get additional info and build other data. **TODO**
+
+### Results
+#### Attendance marking
+#### Course listing
+
+## Mitigations
+
+* Rename all endpoints to not use "so trivial" names
+* Obfuscate the code before shipping it.
+* Train your developers about security issues derived from choosing frameworks based on GitHub stars.
+* Use HTTPS on the serverside.
+
+
+As fas as I can see, there is no other way rather to reimplement the whole application using the Android SDK, preferably using C++ libs. 
+
+JavaScript frameworks [are not suited for secure developments if the person responsible is negligent about it](https://github.com/facebook/react-native/issues/1093). Still if there are no plans to mitigate it you can secure the communications by using [JSON Web Tokens](https://jwt.io) to cypher all sent data, which is a good practice for all browser-based apps.
+
+# Acknowledgements
+To *"el gotito naranjo"* which died a month ago due to the vicious dogs in front of the campus.
+
