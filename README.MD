@@ -3,8 +3,7 @@ An exploit for UtalcaAPP which allows users to attend any class as long as they 
 
 ## Motivation
 * Contribute to QA process while the app is on testing process.
-* Forget for a while that I'm an unemployed student.
-* Satisfy my curiosity and to feed my ego.
+* Satisfy my curiosity.
 * I wanted to make sure that the final product can compete with my standards.
 
 ## How does it works
@@ -29,7 +28,7 @@ chmod +x ./exploit.sh
 ### Audit stage
 I started by checking android log. This gave me some pointers about where to start digging.
 ![initial audit stage](images/initial_audit.png)
-As it can be seen (thanks to the dev who forgot to remove debug messages), the application was built using [ReactNative](https://facebook.github.io/react-native/) which is a JavaScript framework to build mobile applications. As every JS framework it suffers from the crux of low-skilled developers in terms of security and packaging.
+As it can be seen due to the debug log still present on the application, the application was built using [ReactNative](https://facebook.github.io/react-native/) which is a JavaScript framework to build mobile applications.
 
 ### Dissasembly and study stage
 After decompiling the apk I found some interesting things. 
@@ -38,10 +37,10 @@ After decompiling the apk I found some interesting things.
 * The features of the beacon module is to scan and bring up listeners to detect when a beacon is nearby.
 * The beacon module is used on listeners of the ReactNative app, all variables are exposed to ReactNative as soon as a beacon shows up.
 * Beacon detection is not triggered until the user gets the course list. Then, beacon detection turns on and continously scans for nearby beacons, changing flags for every course detected and enabling the "attend" button.
-* There are some complex energy-saving configurations emmbebed in the code. This is another evidence that the developer probably copypasted all the source for the beacons module without actually knowing what he was doing.
+* There are some complex energy-saving configurations emmbebed in the code. The logic style suggest that it was probably copypasted.
 * Every query is made over **HTTP** [which is known by not being a safe protocol](https://www.entrepreneur.com/article/281633). This allows to track every comm between server and cellphone.
 * Auth is made by sending credentials as plain text over HTTP, which can be easily intercepted.
-* Every other method is secured by a session cookie installed onto the ReactNative webview. This cookie is not handled on any other place, which suggest that the developer doesn't know about token-based auth techniques and/or software building techniques.
+* Every other method is secured by a session cookie installed onto the ReactNative webview. This cookie is not handled on any other place.
 * The following enpoints are hardcoded onto the application:
 
 
@@ -189,21 +188,17 @@ All info about the alumni scheduling is exposed as well as their attendance reco
 
 * Rename all endpoints to not use "so trivial" names
 * Obfuscate the code before shipping it.
-* Train your developers about security issues derived from choosing frameworks based on GitHub stars.
+* Train your developers about security issues derived from using Javascript applications.
 * Use HTTPS on the serverside.
-* ~~Use another auth system, if possible token-base~~~ Implement a real authentication process.
+* ~~Use another auth system, if possible token-base~~~ Implement an access control list for attendant and course elements.
 * Remove default error messages as they leak information about the underlying infrastructure.
+* Don't rely on cookies to store sessions, in this case, token-based solutions like Keycloak would suit well this kind of projects.
 
 ## Personal thoughts
-As fas as I can see, there is no other way rather to reimplement the whole application using the Android SDK, preferably using C++ libs. 
-
-JavaScript frameworks [are not suited for secure developments if the person responsible is negligent about it](https://github.com/facebook/react-native/issues/1093). If there are no plans to mitigate it though a whole redesign of the application then at least you can secure the auth process by using [JSON Web Tokens](https://jwt.io) to cypher all data sent over network, which is a good practice for all browser-based apps and using HTTPS instead of HTTP to secure the communications.
-
-~~I don't want to use an application that it is insecure by default. The mere idea of sending my passwords over the network without any encryption it gives me goosebumps. Personally I think that it's offensive because I expect developers to build secure and well tested applications and not toys.~~
+As fas as I can see, there is no other way rather to reimplement the whole application using the Android SDK, preferably using C++ libs because JavaScript frameworks [are not suited for secure developments if the person responsible ignores it's risks](https://github.com/facebook/react-native/issues/1093). If there are no plans to mitigate it though a whole redesign of the application then you can secure the auth process by using [JSON Web Tokens](https://jwt.io) to cypher all data sent over network, which is a good practice for all browser-based apps and also use HTTPS instead of HTTP to secure the communications.
 
 I can understand that the application is under testing stage, but I don't feel comfy about people who doesn't now a thing about security sharing a password here which could be hijacked by mischievous persons. 
 
 ## Acknowledgements
-* To *"el gotito naranjo"* which died a month ago due to the vicious dogs in front of the campus.
-* To the "mobile developer" in charge who forgot to secure its code and to remove debug messages.
+* To *"el gotito naranjo"* which died a month ago due to the vicious dogs in front of the campus. He was part of the souce of inspiration.
 
